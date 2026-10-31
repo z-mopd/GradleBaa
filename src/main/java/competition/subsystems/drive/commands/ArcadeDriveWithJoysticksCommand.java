@@ -11,10 +11,15 @@ public class ArcadeDriveWithJoysticksCommand extends BaseCommand {
     OperatorInterface operatorInterface;
     DriveSubsystem drive;
 
+    private double clamp(double value, double min, double max) {
+        return Math.max(Math.min(value, max), min);
+    }
+
     @Inject
     public ArcadeDriveWithJoysticksCommand(DriveSubsystem driveSubsystem, OperatorInterface oi) {
         this.operatorInterface = oi;
         this.drive = driveSubsystem;
+        this.addRequirements(driveSubsystem);
     }
 
     @Override
@@ -24,6 +29,13 @@ public class ArcadeDriveWithJoysticksCommand extends BaseCommand {
 
     @Override
     public void execute() {
+        double rotation = operatorInterface.gamepad.getLeftStickX();
+        double velocity = operatorInterface.gamepad.getLeftStickY();
+
+        double leftPower  = clamp(velocity - rotation, -1, 1);
+        double rightPower = clamp(velocity + rotation, -1, 1);
+
+        drive.tankDrive(leftPower, rightPower);
     }
 
 }
